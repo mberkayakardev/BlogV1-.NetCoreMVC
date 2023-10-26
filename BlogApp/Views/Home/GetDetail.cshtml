@@ -1,0 +1,67 @@
+﻿@model Blog
+@{
+    Layout = "_Layout";
+}
+
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-12">
+            <h1>@Model.Title</h1>
+        </div>
+    </div>
+
+    <br />
+    <hr />
+    <br />
+    <div class="row">
+        <div class="col-12">
+            @Model.Description
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-8"> Yorumlar </div>
+
+        <div class="col-4">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                Ana yorum ekle
+            </button>
+        </div>
+    </div>
+    <br />
+    <hr />
+    <br />
+    @if (Model.Contents != null)
+    {
+
+        <div class="col-12 mt-2">
+            <div class="border border-primary rounded p-2">
+                <partial name="_CommentsPartialView" model="Model.Contents" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            İlgili bloga ait herhangi bir yorum bulunamamıştır
+        </div>
+    }
+
+
+
+    <partial name="_CommentsreplyForm" model="Model" />
+
+
+
+    @section Scripts
+    {
+        <script>
+            $(document).on("click", ".open-homeEvents", function () {
+                var eventId = $(this).data('id');
+                document.getElementById("RootCommentId").value = eventId;
+            });
+        </script>
+    }
+
+</div>

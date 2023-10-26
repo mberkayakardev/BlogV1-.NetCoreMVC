@@ -14,25 +14,25 @@ namespace BlogApp.Data
         [MaxLength(250)]
         public string ImageUrl { get; set; } = null!;
 
-        [Required]
+        //[Required]
         [MaxLength(250)]
         public string Title { get; set; } = null!;
 
-        [Required]
+        //[Required]
         [MaxLength(250)]
         public string ShortDescription { get; set; } = null!;
 
-        [Required]
+        //[Required]
         public string Description { get; set; } = null!;
 
-        [Required]
+        //[Required]
         [MaxLength(300)]
         public string SeoUrl { get; set; } = null!;
 
-        [Required]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-
+        //[Required]
         public List<BlogCategory>? BlogCategories { get; set; }
+
+        public List<Comment> Contents { get; set; }
 
     }
 }

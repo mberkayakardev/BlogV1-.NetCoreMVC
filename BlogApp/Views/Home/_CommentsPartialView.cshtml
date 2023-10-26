@@ -1,0 +1,24 @@
+﻿@model List<Comment>
+
+
+@if (Model != null)
+{
+
+    <ul>
+        @foreach (var comment in Model)
+        {
+            <li>
+                <div class="@(comment.ParentId == null ? "card mt-2 border-primary" : "card mt-2")">
+                    <div class="card-body">
+                        <h5 class="card-title">@comment.WriterName</h5>
+                        <p class="card-text">@comment.Content</p>
+                        <button type="button" class="open-homeEvents btn btn-primary " data-toggle="modal" data-id="@comment.Id" data-target="#exampleModal">
+                            Cevap Ver
+                        </button>
+                    </div>
+                </div>
+                <partial name="_CommentsPartialView" model="comment.Child" />
+            </li>
+        }
+    </ul>
+}

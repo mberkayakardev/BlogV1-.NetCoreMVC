@@ -29,7 +29,7 @@ namespace BlogApp.Controllers.Admin
        
             if (model.CreatedDate != DateTime.MinValue )
             {
-              query =  query.Where(x=>x.CreatedDate.Date == model.CreatedDate);
+              //query =  query.Where(x=>x.CreatedDate.Date == model.CreatedDate);
             }
 
             if (!string.IsNullOrWhiteSpace(model.Title))
@@ -43,5 +43,6 @@ namespace BlogApp.Controllers.Admin
             return View(blogs);
         }
 
+ 
     }
 }

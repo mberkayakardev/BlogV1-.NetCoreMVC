@@ -30,9 +30,6 @@ namespace BlogApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -63,6 +60,26 @@ namespace BlogApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Blogs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "İlk bloguma hoş geldiniz",
+                            ImageUrl = "https://avatars.githubusercontent.com/u/137995940?v=4",
+                            SeoUrl = "ilk-blog-baslıyoruz",
+                            ShortDescription = "İlk blog ve site amaçlarından bahsedilecektir. ",
+                            Title = "Berkay ilk blog"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "merhaba ben Yavuz selim kahraman.",
+                            ImageUrl = "https://avatars.githubusercontent.com/u/44233634?v=4",
+                            SeoUrl = "ysk-first-blog",
+                            ShortDescription = "yazılım dünyasına hepiniz hoşgeldiniz. ",
+                            Title = "Yavuz Selim Kahraman ile yazılım dünyasına hoşgeldiniz "
+                        });
                 });
 
             modelBuilder.Entity("BlogApp.Data.BlogCategory", b =>
@@ -114,6 +131,61 @@ namespace BlogApp.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("BlogApp.Data.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WriterName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Comments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BlogId = 1,
+                            Content = "İlk yorum master yorum ",
+                            WriterName = "Berkay Akar"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BlogId = 1,
+                            Content = "ikinci yorum master yorum ",
+                            WriterName = "Ahmet akar"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BlogId = 1,
+                            Content = "ikinci yorum master yorum ",
+                            ParentId = 1,
+                            WriterName = "Ahmet akar"
+                        });
+                });
+
             modelBuilder.Entity("BlogApp.Data.BlogCategory", b =>
                 {
                     b.HasOne("BlogApp.Data.Blog", "Blog")
@@ -133,14 +205,38 @@ namespace BlogApp.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("BlogApp.Data.Comment", b =>
+                {
+                    b.HasOne("BlogApp.Data.Blog", "Blog")
+                        .WithMany("Contents")
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BlogApp.Data.Comment", "Parent")
+                        .WithMany("Child")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Blog");
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("BlogApp.Data.Blog", b =>
                 {
                     b.Navigation("BlogCategories");
+
+                    b.Navigation("Contents");
                 });
 
             modelBuilder.Entity("BlogApp.Data.Category", b =>
                 {
                     b.Navigation("BlogCategories");
+                });
+
+            modelBuilder.Entity("BlogApp.Data.Comment", b =>
+                {
+                    b.Navigation("Child");
                 });
 #pragma warning restore 612, 618
         }
