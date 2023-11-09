@@ -2,11 +2,11 @@
 
 namespace BlogApp.Controllers
 {
-    public class HomeController : Controller
+    public class Account : Controller
     {
-        public IActionResult Index()
+        public IActionResult Login()
         {
             return View();
-        }
+        }             
     }
 }
