@@ -1,12 +1,13 @@
 ﻿using BlogApp.Data;
 using BlogApp.Models;
+using BlogApp.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlogApp.Controllers.Admin
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize]
     [Area("Admin")]
     public class BlogController : Controller
     {
@@ -25,6 +26,51 @@ namespace BlogApp.Controllers.Admin
         //        CreatedDate = DateTime.MinValue,
         //    });
         //}
+
+        public IActionResult Create()
+        {
+            return View(new BlogCreateModel());
+        }
+
+        [HttpPost]
+        public IActionResult Create(BlogCreateModel model)
+        {
+            var validator = new BlogCreateModelValidator();
+            var validationResult = validator.Validate(model);
+
+            if (validationResult.IsValid)
+            {
+                var addedBlog = new Blog();
+
+                var extension = Path.GetExtension(model.Image.FileName);
+                var newImageName = Guid.NewGuid().ToString() + extension;
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", newImageName);
+                var fileStream = new FileStream(path, FileMode.Create);
+                model.Image.CopyTo(fileStream);
+                addedBlog.ImageUrl = newImageName;
+
+                addedBlog.CreatedDate = DateTime.Now;
+                addedBlog.Description = model.Description;
+                addedBlog.ShortDescription = model.ShortDescription;
+                addedBlog.SeoUrl = ConvertSeoUrl(model.Title);
+                addedBlog.Title = model.Title;
+
+                this.context.Add(addedBlog);
+                this.context.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            else
+            {
+
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                return View(model);
+            }
+
+        }
 
 
         [HttpGet]
@@ -135,6 +181,109 @@ namespace BlogApp.Controllers.Admin
             }
 
             return RedirectToAction("Index");
+        }
+
+
+        public IActionResult Update(int id)
+        {
+            var updatedBlog = this.context.Blogs.SingleOrDefault(x => x.Id == id);
+            return View(new BlogUpdateModel
+            {
+                Id = updatedBlog.Id,
+                ImageUrl = updatedBlog.ImageUrl,
+                Description = updatedBlog.Description,
+                ShortDescription = updatedBlog.ShortDescription,
+                Title = updatedBlog.Title,
+            });
+        }
+
+        public IActionResult Remove(int id)
+        {
+            var removedBlog = this.context.Blogs.SingleOrDefault(x => x.Id == id);
+            if (removedBlog != null)
+            {
+                this.context.Remove(removedBlog);
+                this.context.SaveChanges();
+            }
+
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Update(BlogUpdateModel model)
+        {
+
+            var validator = new BlogUpdateModelValidator();
+            var validationResult = validator.Validate(model);
+
+            if (validationResult.IsValid)
+            {
+                var updatedBlog = this.context.Blogs.SingleOrDefault(x => x.Id == model.Id);
+
+                if (updatedBlog != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(updatedBlog.ImageUrl) && model.Image != null)
+                    {
+                        var pathControl = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", updatedBlog.ImageUrl);
+
+                        FileInfo fileInfo = new FileInfo(pathControl);
+                        if (fileInfo.Exists)
+                        {
+                            fileInfo.Delete();
+                        }
+
+
+                        var extension = Path.GetExtension(model.Image.FileName);
+                        var newImageName = Guid.NewGuid().ToString() + extension;
+                        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", newImageName);
+                        var fileStream = new FileStream(path, FileMode.Create);
+                        model.Image.CopyTo(fileStream);
+
+                        updatedBlog.ImageUrl = newImageName;
+                    }
+
+
+                    updatedBlog.SeoUrl = ConvertSeoUrl(model.Title);
+                    updatedBlog.ShortDescription = model.ShortDescription;
+                    updatedBlog.Title = model.Title;
+                    updatedBlog.Description = model.Description;
+                    this.context.SaveChanges();
+
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ViewBag.ErrorMessage = "Böyle bir blog şuanda mevcut değil";
+                    return View(model);
+                }
+            }
+            else
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                return View(model);
+            }
+            
+        }
+
+
+
+        private string ConvertSeoUrl(string definition)
+        {
+            definition = definition.ToLower().Replace(' ', '-');
+            //şğüöçı
+            definition = definition.Replace('ş', 's');
+            definition = definition.Replace('ğ', 'g');
+            definition = definition.Replace('ü', 'u');
+            definition = definition.Replace('ö', 'o');
+            definition = definition.Replace('ç', 'c');
+            definition = definition.Replace('ı', 'i');
+            return definition;
+
         }
 
     }

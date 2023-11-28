@@ -14,7 +14,8 @@ namespace BlogApp.Controllers.Admin
     }
 
 
-    [Authorize(Roles = "Admin")]
+
+    [Authorize]
     [Area("Admin")]
     public class CategoryController : Controller
     {
@@ -27,6 +28,7 @@ namespace BlogApp.Controllers.Admin
 
         public IActionResult Index()
         {
+         
             ViewBag.Active = "Category";
             var categories = this.context.Categories.AsNoTracking().ToList();
             return View(categories);

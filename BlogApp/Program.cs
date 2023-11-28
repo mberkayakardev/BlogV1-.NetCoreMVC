@@ -4,16 +4,32 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opt =>
+    {
+        opt.Cookie.HttpOnly = true;
+        opt.Cookie.SameSite = SameSiteMode.Strict;
+        opt.Cookie.Name = "LoginCookie";
+        opt.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+
+
+builder.Services.AddCors(option =>
+{
+    option.AddPolicy("default", conf =>
+    {
+        conf.WithOrigins(new string[]
+        {
+            "http://127.0.0.1:5500"
+        }).AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
+
 builder.Services.AddDbContext<BlogDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Local"));
-});
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x=>
-{
-    x.Cookie.HttpOnly = true;
-    x.Cookie.SameSite= SameSiteMode.Strict;
-
 });
 
 
@@ -25,25 +41,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
+app.UseCors("default");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 
-#region Eski yöntem
-
-//app.UseEndpoints(endpoints =>
-//{
-//    //endpoints.MapAreaControllerRoute(name: "areaRoute", areaName: "Admin", pattern: "{Area}/{Controller=Category}/{Action=Index}/{id?}");
-//    endpoints.MapControllerRoute(name: "area", pattern: "{Area}/{Controller=Category}/{Action=Index}/{id?}");
-//    endpoints.MapDefaultControllerRoute();
-//});
-#endregion
-
-#region Yeni Yöntem
-app.MapAreaControllerRoute(name: "areaRoute", areaName: "Admin", pattern: "{Area}/{Controller=Category}/{Action=Index}/{id?}");
+app.MapControllerRoute(name: "area", pattern: "{Area}/{Controller=Category}/{Action=Index}/{id?}");
 app.MapDefaultControllerRoute();
-#endregion
+
 
 app.Run();
